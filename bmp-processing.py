@@ -129,6 +129,8 @@ class BmpFile:
     def setBGR(self, arr):
         """ requires gbr array """
         i = 0
+        print(self.getwidth())
+        print(self.getheight())
         for hei in range(self.getheight()):
             for wid in range(self.getwidth()):
                 self.__color_b[i] = arr[wid][hei][0]
@@ -136,12 +138,17 @@ class BmpFile:
                 self.__color_r[i] = arr[wid][hei][2]
                 i += 1
 
+    def setWH(self, newwid, newhei):
+        self.__width = newwid.to_bytes(4, 'little')
+        self.__height = newhei.to_bytes(4, 'little')
+
 def main():
     print("\nConvert {} to {}".format(READPATH, WRITEPATH))
     print("1 - Greyscale (Middle value)")
     print("2 - Greyscale (NTSC Coef. method)")
     print("3 - Color Inversion")
     print("4 - Blur")
+    print("5 - Scaling")
     keyinput = input("\nPlease type the number: ")
 
     bmpdata = BmpFile()
@@ -159,6 +166,8 @@ def main():
         invertColors(bmpdata)
     elif int(keyinput) == 4:
         blurImage(bmpdata)
+    elif int(keyinput) == 5:
+        scaleImage(bmpdata)
 
     # writeBMP
     bmpdata.write(WRITEPATH)
@@ -231,6 +240,26 @@ def blurImage(bmpdata):
     bmpdata.setBGR(arr_mod)
     print("Blured the image")
 
+def scaleImage(bmpdata):
+    scale = 0.3
+    arr = bmpdata.getBGR()
+    scaled_width = round(bmpdata.getwidth() * scale)
+    scaled_height = round(bmpdata.getheight() * scale)
+    print("scaled_width: {}, scaled_height: {}".format(scaled_width, scaled_height))
+    #arr_mod = getEmptyArray(scaled_width, scaled_height)
+    arr_mod = bmpdata.getBGR()
+    for hei in range(scaled_height):
+        for wid in range(scaled_width):
+            x = round(wid / scale)
+            y = round(hei / scale)
+
+            if x < bmpdata.getwidth() and y < bmpdata.getheight():
+                arr_mod[wid][hei] = arr[x][y]
+           # else:
+                #arr_mod[wid][hei] = arr[x-1][y-1]
+    print("x: {}, y: {}".format(x, y))
+    bmpdata.setWH(scaled_width, scaled_height)
+    bmpdata.setBGR(arr_mod)
 
 def getEmptyArray(width, height):
     return [[0 for i in range(height)] for j in range(width)]
