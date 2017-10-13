@@ -64,22 +64,32 @@ class BmpFile:
         self.__colornum = bmpfile.read(4)
         self.__impcolornum = bmpfile.read(4)
 
-        tmp = 0
+        setcolor = 0
+        p_wid = 0
+        wid = self.getwidth()
+        padding = self.getpaddingbytesize()
+        
         while 1:
-            readtmp = bmpfile.read(1)
-            # ファイル終了時break
-            if readtmp == b'':
-                break
-            readtmpint = int.from_bytes(readtmp, 'little')
-            if tmp == 0:
-                self.__color_b.append(readtmpint)
-                tmp += 1
-            elif tmp == 1:
-                self.__color_g.append(readtmpint)
-                tmp += 1
-            elif tmp == 2:
-                self.__color_r.append(readtmpint)
-                tmp = 0
+            if p_wid < wid:
+                readtmp = bmpfile.read(1)
+                # ファイル終了時break
+                if readtmp == b'':
+                    break
+                readtmpint = int.from_bytes(readtmp, 'little')
+                if setcolor == 0:
+                    self.__color_b.append(readtmpint)
+                    setcolor += 1
+                elif setcolor == 1:
+                    self.__color_g.append(readtmpint)
+                    setcolor += 1
+                elif setcolor == 2:
+                    self.__color_r.append(readtmpint)
+                    setcolor = 0
+                    p_wid += 1
+            else:
+                if padding != 0:
+                    readtmp = bmpfile.read(padding)
+                p_wid = 0
 
     def write(self, filepath):
         try:
@@ -101,11 +111,14 @@ class BmpFile:
             bmpdata.write(self.__colornum)
             bmpdata.write(self.__impcolornum)
 
+            wid = self.getwidth()
             for i in range(len(self.__color_b)):
                 bmpdata.write(self.__color_b[i].to_bytes(1, 'little'))
                 bmpdata.write(self.__color_g[i].to_bytes(1, 'little'))
                 bmpdata.write(self.__color_r[i].to_bytes(1, 'little'))
-
+                if i % wid == wid - 1:
+                    for _ in range(4 - self.getpaddingbytesize()):
+                        bmpdata.write(b'\x00')
             bmpdata.close()
         except():
             print("OPEN ERROR")
@@ -128,19 +141,23 @@ class BmpFile:
 
     def setBGR(self, arr):
         """ requires gbr array """
-        i = 0
-        print(self.getwidth())
-        print(self.getheight())
+        self.__color_b.clear()
+        self.__color_g.clear()
+        self.__color_r.clear()
         for hei in range(self.getheight()):
             for wid in range(self.getwidth()):
-                self.__color_b[i] = arr[wid][hei][0]
-                self.__color_g[i] = arr[wid][hei][1]
-                self.__color_r[i] = arr[wid][hei][2]
-                i += 1
+                self.__color_b.append(int(arr[wid][hei][0]))
+                self.__color_g.append(int(arr[wid][hei][1]))
+                self.__color_r.append(int(arr[wid][hei][2]))
 
     def setWH(self, newwid, newhei):
         self.__width = newwid.to_bytes(4, 'little')
         self.__height = newhei.to_bytes(4, 'little')
+
+    def getpaddingbytesize(self):
+        """ returns necessary padding bytes """
+        return (self.getwidth() * 3) % 4
+
 
 def main():
     print("\nConvert {} to {}".format(READPATH, WRITEPATH))
@@ -241,13 +258,11 @@ def blurImage(bmpdata):
     print("Blured the image")
 
 def scaleImage(bmpdata):
-    scale = 0.3
+    scale = float(input("Input scaling rate: "))
     arr = bmpdata.getBGR()
     scaled_width = round(bmpdata.getwidth() * scale)
     scaled_height = round(bmpdata.getheight() * scale)
-    print("scaled_width: {}, scaled_height: {}".format(scaled_width, scaled_height))
-    #arr_mod = getEmptyArray(scaled_width, scaled_height)
-    arr_mod = bmpdata.getBGR()
+    arr_mod = getEmptyArray(scaled_width, scaled_height)
     for hei in range(scaled_height):
         for wid in range(scaled_width):
             x = round(wid / scale)
@@ -255,9 +270,6 @@ def scaleImage(bmpdata):
 
             if x < bmpdata.getwidth() and y < bmpdata.getheight():
                 arr_mod[wid][hei] = arr[x][y]
-           # else:
-                #arr_mod[wid][hei] = arr[x-1][y-1]
-    print("x: {}, y: {}".format(x, y))
     bmpdata.setWH(scaled_width, scaled_height)
     bmpdata.setBGR(arr_mod)
 
