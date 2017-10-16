@@ -146,9 +146,9 @@ class BmpFile:
         self.__color_r.clear()
         for hei in range(self.getheight()):
             for wid in range(self.getwidth()):
-                self.__color_b.append(int(arr[wid][hei][0]))
-                self.__color_g.append(int(arr[wid][hei][1]))
-                self.__color_r.append(int(arr[wid][hei][2]))
+                self.__color_b.append(arr[wid][hei][0])
+                self.__color_g.append(arr[wid][hei][1])
+                self.__color_r.append(arr[wid][hei][2])
 
     def setWH(self, newwid, newhei):
         self.__width = newwid.to_bytes(4, 'little')
@@ -167,7 +167,7 @@ def main():
     print("4 - Blur")
     print("5 - Scaling")
     keyinput = input("\nPlease type the number: ")
-
+    
     bmpdata = BmpFile()
 
     # readBMP
@@ -270,6 +270,9 @@ def scaleImage(bmpdata):
 
             if x < bmpdata.getwidth() and y < bmpdata.getheight():
                 arr_mod[wid][hei] = arr[x][y]
+            else:
+                arr_mod[wid][hei] = [0, 0, 0]
+
     bmpdata.setWH(scaled_width, scaled_height)
     bmpdata.setBGR(arr_mod)
 
