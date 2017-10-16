@@ -116,7 +116,7 @@ class BmpFile:
                 bmpdata.write(self.__color_b[i].to_bytes(1, 'little'))
                 bmpdata.write(self.__color_g[i].to_bytes(1, 'little'))
                 bmpdata.write(self.__color_r[i].to_bytes(1, 'little'))
-                if i % wid == wid - 1:
+                if i % wid == wid - 1 and self.getpaddingbytesize() != 0:
                     for _ in range(4 - self.getpaddingbytesize()):
                         bmpdata.write(b'\x00')
             bmpdata.close()
@@ -263,11 +263,11 @@ def scaleImage(bmpdata):
     scaled_width = round(bmpdata.getwidth() * scale)
     scaled_height = round(bmpdata.getheight() * scale)
     arr_mod = getEmptyArray(scaled_width, scaled_height)
+
     for hei in range(scaled_height):
         for wid in range(scaled_width):
             x = round(wid / scale)
             y = round(hei / scale)
-
             if x < bmpdata.getwidth() and y < bmpdata.getheight():
                 arr_mod[wid][hei] = arr[x][y]
             else:
@@ -275,6 +275,7 @@ def scaleImage(bmpdata):
 
     bmpdata.setWH(scaled_width, scaled_height)
     bmpdata.setBGR(arr_mod)
+
 
 def getEmptyArray(width, height):
     return [[0 for i in range(height)] for j in range(width)]
