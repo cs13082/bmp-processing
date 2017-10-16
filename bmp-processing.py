@@ -166,6 +166,7 @@ def main():
     print("3 - Color Inversion")
     print("4 - Blur")
     print("5 - Scaling")
+    print("6 - Binarize")
     keyinput = input("\nPlease type the number: ")
     
     bmpdata = BmpFile()
@@ -179,14 +180,22 @@ def main():
     # Image Processing
     if int(keyinput) == 1:
         convertToGreyscale1(bmpdata)
+        print("Greyscaled (Middle value) the file")
     elif int(keyinput) == 2:
         convertToGreyscale2(bmpdata)
+        print("Greyscaled (NTSC Coef. method) the file")
     elif int(keyinput) == 3:
         invertColors(bmpdata)
+        print("Inverted the color")
     elif int(keyinput) == 4:
         blurImage(bmpdata)
+        print("Blured the image")
     elif int(keyinput) == 5:
         scaleImage(bmpdata)
+        print("Scaled the image")
+    elif int(keyinput) == 6:
+        binaryImage(bmpdata)
+        print("Binarized the image")
 
     # writeBMP
     bmpdata.write(WRITEPATH)
@@ -201,7 +210,6 @@ def convertToGreyscale1(bmpdata):
             calc = (max(arr[wid][hei]) + min(arr[wid][hei])) // 2
             arr[wid][hei] = [calc, calc, calc]
     bmpdata.setBGR(arr)
-    print("Greyscaled (Middle value) the file")
 
 def convertToGreyscale2(bmpdata):
     """ NTSC Coef. method """
@@ -211,7 +219,6 @@ def convertToGreyscale2(bmpdata):
             calc = int(0.298912*arr[wid][hei][2] + 0.586611*arr[wid][hei][1] + 0.114478*arr[wid][hei][0])
             arr[wid][hei] = [calc, calc, calc]
     bmpdata.setBGR(arr)
-    print("Greyscaled (NTSC Coef. method) the file")
 
 def invertColors(bmpdata):
     arr = bmpdata.getBGR()
@@ -221,7 +228,6 @@ def invertColors(bmpdata):
                              abs(255 - arr[wid][hei][1]),
                              abs(255 - arr[wid][hei][2])]
     bmpdata.setBGR(arr)
-    print("Inverted the color")
 
 def blurImage(bmpdata):
     arr = bmpdata.getBGR()
@@ -257,7 +263,6 @@ def blurImage(bmpdata):
             arr_mod[wid][hei] = [sum_b // count, sum_g // count, sum_r // count]
 
     bmpdata.setBGR(arr_mod)
-    print("Blured the image")
 
 def scaleImage(bmpdata):
     scale = float(input("Input scaling rate: "))
@@ -277,7 +282,21 @@ def scaleImage(bmpdata):
 
     bmpdata.setWH(scaled_width, scaled_height)
     bmpdata.setBGR(arr_mod)
-    print("Scaled the image")
+
+
+def binaryImage(bmpdata):
+    threshold = int(input("Input threshold (0 - 255): "))
+    if threshold < 0 or threshold > 255:
+        threshold = 127
+    convertToGreyscale2(bmpdata)
+    arr = bmpdata.getBGR()
+    for hei in range(bmpdata.getheight()):
+        for wid in range(bmpdata.getwidth()):
+            if arr[wid][hei][0] > threshold:
+                arr[wid][hei] = [255, 255, 255]
+            else:
+                arr[wid][hei] = [0, 0, 0]
+    bmpdata.setBGR(arr)
 
 
 def getEmptyArray(width, height):
