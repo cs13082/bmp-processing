@@ -277,6 +277,7 @@ def scaleImage(bmpdata):
 
     bmpdata.setWH(scaled_width, scaled_height)
     bmpdata.setBGR(arr_mod)
+    print("Scaled the image")
 
 
 def getEmptyArray(width, height):
