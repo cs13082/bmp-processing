@@ -171,7 +171,9 @@ def main():
     bmpdata = BmpFile()
 
     # readBMP
-    bmpdata.read(open(READPATH, 'rb'))
+    rfile = open(READPATH, 'rb')
+    bmpdata.read(rfile)
+    rfile.close()
     print("Read the file")
 
     # Image Processing
