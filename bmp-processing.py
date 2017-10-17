@@ -2,8 +2,7 @@
 # -*- coding: UTF-8 -*-
 # Tested on Python 3.6.3 (32bit)
 
-READPATH = r"./gazou1.bmp"
-WRITEPATH = r"./gazou2.bmp"
+import sys
 
 class BmpFile:
     """
@@ -68,7 +67,7 @@ class BmpFile:
         p_wid = 0
         wid = self.getwidth()
         padding = self.getpaddingbytesize()
-        
+
         while 1:
             if p_wid < wid:
                 readtmp = bmpfile.read(1)
@@ -160,45 +159,57 @@ class BmpFile:
 
 
 def main():
-    print("\nConvert {} to {}".format(READPATH, WRITEPATH))
-    print("1 - Greyscale (Middle value)")
-    print("2 - Greyscale (NTSC Coef. method)")
-    print("3 - Color Inversion")
-    print("4 - Blur")
-    print("5 - Scaling")
-    print("6 - Binarize")
-    keyinput = input("\nPlease type the number: ")
-    
+    readpath = r"./gazou1.bmp"
+    writepath = r"./gazou2.bmp"
+
+    args = sys.argv
+    if len(sys.argv) == 3 or len(sys.argv) == 4:
+        readpath = args[1]
+        writepath = args[2]
+
+    print("\nConvert {} to {}".format(readpath, writepath))
+
+    if len(sys.argv) == 4:
+        keyinput = int(args[3])
+    else:
+        print("1 - Greyscale (Middle value)")
+        print("2 - Greyscale (NTSC Coef. method)")
+        print("3 - Color Inversion")
+        print("4 - Blur")
+        print("5 - Scaling")
+        print("6 - Binarize")
+        keyinput = int(input("\nPlease type the number: "))
+
     bmpdata = BmpFile()
 
     # readBMP
-    rfile = open(READPATH, 'rb')
+    rfile = open(readpath, 'rb')
     bmpdata.read(rfile)
     rfile.close()
     print("Read the file")
 
     # Image Processing
-    if int(keyinput) == 1:
+    if keyinput == 1:
         convertToGreyscale1(bmpdata)
         print("Greyscaled (Middle value) the file")
-    elif int(keyinput) == 2:
+    elif keyinput == 2:
         convertToGreyscale2(bmpdata)
         print("Greyscaled (NTSC Coef. method) the file")
-    elif int(keyinput) == 3:
+    elif keyinput == 3:
         invertColors(bmpdata)
         print("Inverted the color")
-    elif int(keyinput) == 4:
+    elif keyinput == 4:
         blurImage(bmpdata)
         print("Blured the image")
-    elif int(keyinput) == 5:
+    elif keyinput == 5:
         scaleImage(bmpdata)
         print("Scaled the image")
-    elif int(keyinput) == 6:
+    elif keyinput == 6:
         binaryImage(bmpdata)
         print("Binarized the image")
 
     # writeBMP
-    bmpdata.write(WRITEPATH)
+    bmpdata.write(writepath)
     print("Wrote the file")
 
 
